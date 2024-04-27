@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Define a variável HOME como o caminho absoluto do diretório home
+HOME=$(realpath ~)
+
 # Verifica se xmrig e passwd existem e atribui permissões de execução
 if [ -f "$HOME/minershell-main/minershell-main/xmrig" ]; then
   chmod +x "$HOME/minershell-main/minershell-main/xmrig"
